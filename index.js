@@ -1,0 +1,60 @@
+const express = require('express');
+const app = express();
+const MongoClient = require('mongodb').MongoClient;
+const cors = require('cors');
+const bodyParser = require('body-parser');
+require('dotenv').config();
+const port = process.env.PORT || 5055;
+
+
+app.use(express.json());
+app.use(cors())
+
+
+app.get('/', (req, res) => {
+    res.send('Hello World')
+})
+
+
+
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.oqab1.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
+
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+client.connect(err => {
+  const serviceCollection = client.db("repair-master").collection("services");
+  const reviewCollection = client.db("repair-master").collection("reviews");
+
+  app.post('/addService', (req, res) => {
+      const service = req.body;
+      serviceCollection.insertOne(service)
+      .then(result => {
+          res.send(result.insertedCount > 0)
+      })
+  })
+
+  app.get('/services', (req, res) => {
+      serviceCollection.find({})
+      .toArray((error, document) => {
+          res.send(document)
+      })
+  })
+
+  app.post('/addReview', (req, res) => {
+      const review = req.body;
+      reviewCollection.insertOne(review)
+      .then(result => {
+          res.send(result.insertedCount > 0)
+      })
+  })
+  
+  app.get('/reviews', (req, res) => {
+      reviewCollection.find({})
+      .toArray((error, document) => {
+          res.send(document)
+      })
+  })
+  
+});
+
+
+app.listen(port)
