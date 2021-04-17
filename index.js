@@ -106,8 +106,8 @@ client.connect(err => {
       )
       
       .then(result => {
-          res.redirect('/dashboard/orders')
-            // res.send(result.modifiedCount > 0)
+        //   res.redirect('/dashboard/myService')
+            res.send(result.modifiedCount > 0)
       })
   })
 
