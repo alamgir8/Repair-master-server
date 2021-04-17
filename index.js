@@ -23,6 +23,7 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
   const serviceCollection = client.db("repair-master").collection("services");
+  const adminCollection = client.db("repair-master").collection("admins");
   const orderCollection = client.db("repair-master").collection('orders');
   const reviewCollection = client.db("repair-master").collection("reviews");
 
@@ -38,6 +39,22 @@ client.connect(err => {
       serviceCollection.find({})
       .toArray((error, document) => {
           res.send(document)
+      })
+  })
+
+  app.post('/addAdmin', (req, res) => {
+      const newAdmin = req.body;
+      adminCollection.insertOne(newAdmin)
+      .then(result => {
+          res.send(result.insertedCount > 0)
+      })
+  })
+
+  app.post('/isAdmin', (req, res) => {
+      const email = req.body.email;
+      adminCollection.find({email: email})
+      .toArray((error, admin) => {
+          res.send(admin.length > 0)
       })
   })
   
@@ -56,6 +73,14 @@ client.connect(err => {
       })
   })
 
+  app.get('/order', (req, res) => {
+      const email = req.query.email;
+      orderCollection.find({email: email})
+      .toArray((error, document) => {
+          res.send(document)
+      })
+  })
+
   app.post('/addReview', (req, res) => {
       const review = req.body;
       reviewCollection.insertOne(review)
@@ -68,6 +93,21 @@ client.connect(err => {
       reviewCollection.find({})
       .toArray((error, document) => {
           res.send(document)
+      })
+  })
+
+  app.patch('/updateService/:id', (req, res) => {
+      const updateId = req.params.id;
+      orderCollection.updateOne({_id: objectId(updateId)},
+        {
+            $set: {status: req.body.status}
+        }
+      
+      )
+      
+      .then(result => {
+        //   res.redirect('/dashboard/myService')
+            res.send(result.modifiedCount > 0)
       })
   })
 
