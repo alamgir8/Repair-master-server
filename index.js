@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const MongoClient = require('mongodb').MongoClient;
+const objectId = require('mongodb').ObjectID;
 const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config();
@@ -22,6 +23,7 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
   const serviceCollection = client.db("repair-master").collection("services");
+  const orderCollection = client.db("repair-master").collection('orders');
   const reviewCollection = client.db("repair-master").collection("reviews");
 
   app.post('/addService', (req, res) => {
@@ -34,6 +36,21 @@ client.connect(err => {
 
   app.get('/services', (req, res) => {
       serviceCollection.find({})
+      .toArray((error, document) => {
+          res.send(document)
+      })
+  })
+  
+  app.post('/addOrder', (req, res) => {
+      const orderedService = req.body;
+      orderCollection.insertOne(orderedService)
+      .then(result => {
+          res.send(result.insertedCount > 0)
+      })
+
+  })
+  app.get('/orders', (req, res) => {
+      orderCollection.find({})
       .toArray((error, document) => {
           res.send(document)
       })
@@ -51,6 +68,15 @@ client.connect(err => {
       reviewCollection.find({})
       .toArray((error, document) => {
           res.send(document)
+      })
+  })
+
+  app.delete('/deleteService/:id', (req, res) => {
+      const serviceId = req.params.id;
+      serviceCollection.deleteOne({_id: objectId(serviceId)})
+      .then(result => {
+        //   res.send(result.deletedCount > 0)
+          res.redirect('/dashboard/manageService')
       })
   })
   
