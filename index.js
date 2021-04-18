@@ -98,9 +98,11 @@ client.connect(err => {
 
   app.patch('/updateService/:id', (req, res) => {
       const updateId = req.params.id;
+      const newStatus = req.body.status;
+      console.log(newStatus);
       orderCollection.updateOne({_id: objectId(updateId)},
         {
-            $set: {status: req.body.status}
+            $set: {status: newStatus}
         }
       
       )
