@@ -50,12 +50,12 @@ client.connect(err => {
       })
   })
 
-  app.post('/isAdmin', (req, res) => {
-      const email = req.body.email;
-      adminCollection.find({email: email})
-      .toArray((error, admin) => {
-          res.send(admin.length > 0)
-      })
+  app.get('/isAdmin', (req, res) => {
+    //   const email = req.body.email;
+      adminCollection.find({})
+      .toArray((error, document) => {
+        res.send(document)
+    })
   })
   
   app.post('/addOrder', (req, res) => {
